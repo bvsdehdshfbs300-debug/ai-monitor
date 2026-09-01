@@ -80,6 +80,10 @@ $files = @(
     (Join-Path $root 'dsh-monitor.js'),
     (Join-Path $root 'claude-monitor.js'),
     (Join-Path $root 'codex-monitor.js'),
+    (Join-Path $root 'cherry-monitor.js'),
+    (Join-Path $root 'aider-monitor.js'),
+    (Join-Path $root 'opencode-monitor.js'),
+    (Join-Path $root 'cline-monitor.js'),
     (Join-Path $root '背景.jpg'),
     $icoPath
 )

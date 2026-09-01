@@ -1106,6 +1106,18 @@ $dshSessions = if ($env:DSH_HOME) { Join-Path $env:DSH_HOME 'sessions' } else { 
 if (Test-ClientAvailable $dshSessions 'dsh-monitor.js') { $script:monitors += 'dsh-monitor.js' }
 if (Test-ClientAvailable (Join-Path $env:USERPROFILE '.claude\projects') 'claude-monitor.js') { $script:monitors += 'claude-monitor.js' }
 if (Test-ClientAvailable (Join-Path $env:USERPROFILE '.codex') 'codex-monitor.js') { $script:monitors += 'codex-monitor.js' }
+if (Test-ClientAvailable (Join-Path $env:APPDATA 'CherryStudio\Data') 'cherry-monitor.js') { $script:monitors += 'cherry-monitor.js' }
+if (Test-ClientAvailable (Join-Path $env:USERPROFILE '.aider') 'aider-monitor.js') { $script:monitors += 'aider-monitor.js' }
+if (Test-ClientAvailable (Join-Path $env:USERPROFILE '.local\share\opencode') 'opencode-monitor.js') { $script:monitors += 'opencode-monitor.js' }
+# Cline / Roo Code（cline-monitor 内部扫描多个根）
+$clineRoots = @(
+    (Join-Path $env:APPDATA 'Code\User\globalStorage\saoudrizwan.claude-dev'),
+    (Join-Path $env:USERPROFILE '.cline\data'),
+    (Join-Path $env:APPDATA 'Code\User\globalStorage\rooveterinaryinc.roo-cline')
+)
+if (($clineRoots | Where-Object { Test-Path $_ }) -and (Test-ClientAvailable $dshSessions 'cline-monitor.js')) {
+    $script:monitors += 'cline-monitor.js'
+}
 
 # 采集所有已启用客户端的请求用量（增量写 usage.log 后刷新显示）
 function Invoke-ClientMonitor {

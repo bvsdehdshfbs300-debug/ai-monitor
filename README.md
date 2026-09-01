@@ -14,7 +14,7 @@
 - 📊 **参数趋势图表**：最近 10 次请求的 Tokens / 花费柱状图、缓存命中率折线图
 - 🗃️ **缓存命中统计**：命中率、滚动平均命中率（最近 20 次）
 - 💰 **花费估算**：按官方价格表计算每次与今日累计花费
-- 🔌 **多客户端自动监控**：自动识别并读取 [DeepSeek Harness](https://github.com/deepseek-ai) / **Claude Code** / **Codex** 的会话记录（真实 tokens 与缓存命中，8 秒增量刷新）
+- 🔌 **多客户端自动监控**：自动识别并读取 **DeepSeek Harness / Claude Code / Codex / Cherry Studio / aider / OpenCode / Cline / Roo Code** 的会话记录（真实 tokens 与缓存命中，8 秒增量刷新）
 - 🖥️ **本机监控**：AI 进程数、内存、CPU（1.5 秒高频刷新）
 - 🪟 **悬浮窗交互**：拖动、双击/按钮收起为照片小卡片、右键菜单、开机自启
 - 🧭 **首次启动向导**：图形化引导配置 API Key，小白 3 分钟上手
