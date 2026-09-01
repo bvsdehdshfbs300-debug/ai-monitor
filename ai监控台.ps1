@@ -590,10 +590,6 @@ function Update-BalanceDisplay {
         Set-Text 'txtStatus' '⚠ 余额不足'
         (Get-UI 'txtStatus').Foreground = [System.Windows.Media.Brushes]::OrangeRed
         (Get-UI 'txtBalance').Foreground = [System.Windows.Media.Brushes]::OrangeRed
-    } elseif ($total -lt 10) {
-        Set-Text 'txtStatus' '⚠ 余额偏低'
-        (Get-UI 'txtStatus').Foreground = [System.Windows.Media.Brushes]::Orange
-        (Get-UI 'txtBalance').Foreground = [System.Windows.Media.Brushes]::White
     } else {
         Set-Text 'txtStatus' '✓'
         (Get-UI 'txtStatus').Foreground = [System.Windows.Media.Brushes]::White
