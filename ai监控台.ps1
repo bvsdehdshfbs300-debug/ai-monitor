@@ -1089,31 +1089,35 @@ function Test-Key {
 })
 
 # ============================================================
-#  DSH 集成：监控 DeepSeek Harness 会话
+#  AI 客户端监控（通用）：DSH / Claude Code / Codex
+#  每个客户端一个 node 适配器，统一输出到 usage.log（source 区分）
 # ============================================================
-$script:dshEnabled = $false
-$script:dshMonitorJs = Join-Path $script:ScriptDir 'dsh-monitor.js'
+$script:monitors = @()   # 已启用的适配器脚本
 
-# 检测 DSH 环境（Node ≥ 22.19 + DSH 会话目录 + 监控脚本）
-function Test-DshAvailable {
-    if (-not (Test-Path $script:dshMonitorJs)) { return $false }
-    $nodeCmd = Get-Command node -ErrorAction SilentlyContinue
-    if (-not $nodeCmd) { return $false }
-    $dshSessions = if ($env:DSH_HOME) { Join-Path $env:DSH_HOME 'sessions' } else { Join-Path $env:USERPROFILE '.dsh\sessions' }
-    return Test-Path $dshSessions
+function Test-ClientAvailable {
+    param([string]$DataDir, [string]$ScriptName)
+    if (-not (Test-Path (Join-Path $script:ScriptDir $ScriptName))) { return $false }
+    if (-not (Get-Command node -ErrorAction SilentlyContinue)) { return $false }
+    return Test-Path $DataDir
 }
 
-# 采集 DSH 请求用量（增量写入 usage.log 后刷新显示）
-function Invoke-DshMonitor {
-    if (-not $script:dshEnabled) { return }
+# 检测各客户端（有数据目录 + node 即启用对应适配器）
+$dshSessions = if ($env:DSH_HOME) { Join-Path $env:DSH_HOME 'sessions' } else { Join-Path $env:USERPROFILE '.dsh\sessions' }
+if (Test-ClientAvailable $dshSessions 'dsh-monitor.js') { $script:monitors += 'dsh-monitor.js' }
+if (Test-ClientAvailable (Join-Path $env:USERPROFILE '.claude\projects') 'claude-monitor.js') { $script:monitors += 'claude-monitor.js' }
+if (Test-ClientAvailable (Join-Path $env:USERPROFILE '.codex') 'codex-monitor.js') { $script:monitors += 'codex-monitor.js' }
+
+# 采集所有已启用客户端的请求用量（增量写 usage.log 后刷新显示）
+function Invoke-ClientMonitor {
+    if ($script:monitors.Count -eq 0) { return }
     if ($script:dragging) { return }
-    try {
-        & node $script:dshMonitorJs $script:LogFile 2>$null | Out-Null
-        Refresh-Fast
-    } catch { }
+    foreach ($m in $script:monitors) {
+        try {
+            & node (Join-Path $script:ScriptDir $m) $script:LogFile 2>$null | Out-Null
+        } catch { }
+    }
+    Refresh-Fast
 }
-
-$script:dshEnabled = Test-DshAvailable
 
 # ============================================================
 #  主窗口启动
@@ -1138,14 +1142,14 @@ function Start-MainWindow {
     $timerLocal.Add_Tick({ Update-ServiceLocal })
     $timerLocal.Start()
 
-    # DSH 集成：定期读取 DeepSeek Harness 会话，把请求用量计入统计
-    if ($script:dshEnabled) {
-        $timerDsh = New-Object System.Windows.Threading.DispatcherTimer
-        $timerDsh.Interval = [TimeSpan]::FromSeconds(8)
-        $timerDsh.Add_Tick({ Invoke-DshMonitor })
-        $timerDsh.Start()
+    # AI 客户端监控：定期采集 DSH / Claude Code / Codex 的请求用量
+    if ($script:monitors.Count -gt 0) {
+        $timerMon = New-Object System.Windows.Threading.DispatcherTimer
+        $timerMon.Interval = [TimeSpan]::FromSeconds(8)
+        $timerMon.Add_Tick({ Invoke-ClientMonitor })
+        $timerMon.Start()
         # 启动时立即采集一次
-        Invoke-DshMonitor
+        Invoke-ClientMonitor
     }
 
     Load-Settings
@@ -1172,7 +1176,7 @@ function Start-MainWindow {
     $timerFast.Stop()
     $timerSlow.Stop()
     $timerLocal.Stop()
-    if ($timerDsh) { $timerDsh.Stop() }
+    if ($timerMon) { $timerMon.Stop() }
 }
 
 # ============================================================

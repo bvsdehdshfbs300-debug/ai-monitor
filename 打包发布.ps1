@@ -78,6 +78,8 @@ $files = @(
     $vbsPath,
     (Join-Path $root '使用说明.txt'),
     (Join-Path $root 'dsh-monitor.js'),
+    (Join-Path $root 'claude-monitor.js'),
+    (Join-Path $root 'codex-monitor.js'),
     (Join-Path $root '背景.jpg'),
     $icoPath
 )
