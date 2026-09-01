@@ -163,17 +163,10 @@ function New-Brush([int]$a, [int]$r, [int]$g, [int]$b) {
       </Grid>
 
       <Border x:Name="balanceCard" Background="#2234D399" CornerRadius="10" Padding="10" Margin="0,10,0,0">
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          <StackPanel>
-            <TextBlock x:Name="txtBalance" Text="--" Foreground="White" FontSize="24" FontWeight="Bold"/>
-            <TextBlock x:Name="txtBalanceDetail" Text="正在连接…" Foreground="#AAFFFFFF" FontSize="11" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
-          </StackPanel>
-          <TextBlock x:Name="txtStatus" Grid.Column="1" Text="···" Foreground="#AAFFFFFF" FontSize="11" VerticalAlignment="Top"/>
-        </Grid>
+        <StackPanel>
+          <TextBlock x:Name="txtBalance" Text="--" Foreground="White" FontSize="24" FontWeight="Bold"/>
+          <TextBlock x:Name="txtBalanceDetail" Text="正在连接…" Foreground="#AAFFFFFF" FontSize="11" Margin="0,2,0,0" TextTrimming="CharacterEllipsis"/>
+        </StackPanel>
       </Border>
 
       <!-- 收起模式：今日使用（展开时隐藏） -->
@@ -563,7 +556,6 @@ function Update-BalanceDisplay {
         Set-Text 'txtBalance' '--'
         Set-Text 'txtBalanceDetail' '无法获取余额'
         (Get-UI 'txtBalanceDetail').Visibility = [System.Windows.Visibility]::Visible
-        Set-Text 'txtStatus' '···'
         return
     }
     $info = $bl.data.balance_infos[0]
@@ -582,17 +574,12 @@ function Update-BalanceDisplay {
     # 只要余额：隐藏明细行
     (Get-UI 'txtBalanceDetail').Visibility = [System.Windows.Visibility]::Collapsed
 
+    # 仅用颜色做余额警戒（不显示文字状态）
     if (-not $ok) {
-        Set-Text 'txtStatus' '✗ 不可用'
-        (Get-UI 'txtStatus').Foreground = [System.Windows.Media.Brushes]::OrangeRed
         (Get-UI 'txtBalance').Foreground = [System.Windows.Media.Brushes]::OrangeRed
     } elseif ($total -lt 5) {
-        Set-Text 'txtStatus' '⚠ 余额不足'
-        (Get-UI 'txtStatus').Foreground = [System.Windows.Media.Brushes]::OrangeRed
         (Get-UI 'txtBalance').Foreground = [System.Windows.Media.Brushes]::OrangeRed
     } else {
-        Set-Text 'txtStatus' '✓'
-        (Get-UI 'txtStatus').Foreground = [System.Windows.Media.Brushes]::White
         (Get-UI 'txtBalance').Foreground = [System.Windows.Media.Brushes]::White
     }
 }
@@ -805,8 +792,6 @@ function Refresh-Slow {
         Set-Text 'txtBalance' '--'
         Set-Text 'txtBalanceDetail' (Get-FriendlyError $_.Exception)
         (Get-UI 'txtBalanceDetail').Visibility = [System.Windows.Visibility]::Visible
-        Set-Text 'txtStatus' '✗ 异常'
-        (Get-UI 'txtStatus').Foreground = [System.Windows.Media.Brushes]::OrangeRed
     }
     Update-BalanceDisplay
 }
