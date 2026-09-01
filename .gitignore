@@ -1,0 +1,11 @@
+# 发布产物
+ai监控台_v*.zip
+*.zip
+
+# 备份 / 临时文件
+*.bak
+*.tmp
+*.log
+
+# 本地配置（可能包含 API Key 模板）
+config.json
