@@ -295,7 +295,7 @@ function New-Brush([int]$a, [int]$r, [int]$g, [int]$b) {
           </StackPanel>
           <StackPanel Grid.Column="2">
             <TextBlock Text="内存/CPU" Foreground="#FF8F8FA3" FontSize="10"/>
-            <TextBlock x:Name="txtMemCpu" Text="--" Foreground="#FFF0F0F5" FontSize="13" FontWeight="SemiBold"/>
+            <TextBlock x:Name="txtMemCpu" Text="--" Foreground="#FFF0F0F5" FontSize="11" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
           </StackPanel>
         </Grid>
 
@@ -784,8 +784,8 @@ function Update-ServiceLocal {
 
     try {
         $os = Get-CimInstance Win32_OperatingSystem
-        $freeGb = [math]::Round($os.FreePhysicalMemory / 1MB, 1)
-        $totalGb = [math]::Round($os.TotalVisibleMemorySize / 1MB, 1)
+        $freeGb = [math]::Round($os.FreePhysicalMemory / 1MB, 0)
+        $totalGb = [math]::Round($os.TotalVisibleMemorySize / 1MB, 0)
         $usedGb = $totalGb - $freeGb
         $cpu = 0
         try {
@@ -793,7 +793,8 @@ function Update-ServiceLocal {
             $cpuAvg = Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average
             $cpu = [math]::Round($cpuAvg.Average, 0)
         } catch { $cpu = 0 }
-        Set-Text 'txtMemCpu' ("{0}/{1}GB · {2}%" -f $usedGb, $totalGb, $cpu)
+        # 精简格式，避免小格子溢出
+        Set-Text 'txtMemCpu' ("{0}/{1}G · {2}%" -f $usedGb, $totalGb, $cpu)
     } catch { Set-Text 'txtMemCpu' '--' }
 }
 
