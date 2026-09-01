@@ -126,4 +126,4 @@ Remove-Item $tempDir -Recurse -Force
 
 Write-Host "✓ 发布包已生成: $zipPath"
 Write-Host ("  大小: {0:N1} KB" -f ((Get-Item $zipPath).Length / 1KB))
-Write-Host "  内容: ai监控台.ps1 / 启动ai监控台.vbs / 使用说明.txt / 第一步先看我.txt / dsh-monitor.js / 背景.jpg / 图标.ico"
+Write-Host "  内容: ai监控台.ps1 / 启动ai监控台.vbs / 使用说明.txt / 第一步先看我.txt / dsh-monitor.js / claude-monitor.js / codex-monitor.js / cherry-monitor.js / aider-monitor.js / opencode-monitor.js / cline-monitor.js / 背景.jpg / 图标.ico"
