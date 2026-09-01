@@ -203,15 +203,7 @@ function New-Brush([int]$a, [int]$r, [int]$g, [int]$b) {
       </Border>
 
       <StackPanel x:Name="detail" Margin="0,10,0,0">
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="Auto"/>
-          </Grid.ColumnDefinitions>
-          <TextBlock Text="参数趋势 · 最近10次请求" Foreground="#FF8F8FA3" FontSize="11" VerticalAlignment="Center"/>
-          <Button x:Name="btnTest" Grid.Column="1" Content="🧪 测试" Width="52" Height="20" FontSize="10"
-                  Background="#222D6CDF" Foreground="#FF9CC3FF" BorderThickness="0" Cursor="Hand" ToolTip="发一条测试请求刷新数据"/>
-        </Grid>
+        <TextBlock Text="参数趋势 · 最近10次请求" Foreground="#FF8F8FA3" FontSize="11" VerticalAlignment="Center"/>
         <Border Background="#18000000" CornerRadius="8" Padding="8,6,8,6" Margin="0,4,0,0">
           <StackPanel>
             <!-- 行 1：Tokens 趋势 -->
@@ -309,7 +301,7 @@ function New-Brush([int]$a, [int]$r, [int]$g, [int]$b) {
 
         <TextBlock Text="最近请求" Foreground="#FF8F8FA3" FontSize="11" Margin="0,12,0,0"/>
         <StackPanel x:Name="recentList"/>
-        <TextBlock x:Name="txtRecentEmpty" Text="（暂无记录，右键「测试」或外部工具写入日志后自动记录）" Foreground="#FF5A5A6E" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0"/>
+        <TextBlock x:Name="txtRecentEmpty" Text="（暂无记录，使用后自动记录）" Foreground="#FF5A5A6E" FontSize="10" TextWrapping="Wrap" Margin="0,4,0,0"/>
       </StackPanel>
       </StackPanel>
       <!-- 放大按钮置于最顶层（Grid 最后一个子元素，不被内容遮挡） -->
@@ -715,7 +707,7 @@ function Update-Chart {
         Set-Text 'txtChartTokens' '--'
         Set-Text 'txtChartCost' '--'
         Set-Text 'txtChartHit' '--'
-        Set-Text 'txtChartInfo' '暂无数据 · 点「测试」或右键发测试请求'
+        Set-Text 'txtChartInfo' '暂无数据 · 提问后自动记录'
     }
 }
 
@@ -952,11 +944,6 @@ $miRefresh.Header = '🔄 刷新余额'
 $miRefresh.Add_Click({ Refresh-Slow })
 $null = $menu.Items.Add($miRefresh)
 
-$miTestReq = New-Object System.Windows.Controls.MenuItem
-$miTestReq.Header = '🧪 发测试请求'
-$miTestReq.Add_Click({ Send-TestRequest })
-$null = $menu.Items.Add($miTestReq)
-
 $miCopy = New-Object System.Windows.Controls.MenuItem
 $miCopy.Header = '📋 复制余额'
 $miCopy.Add_Click({
@@ -996,32 +983,6 @@ $null = $menu.Items.Add($miQuit)
 
 $window.ContextMenu = $menu
 
-# ------------------------------------------------------------
-# 测试请求：发一条固定 prompt，产生一次真实请求并记录到图表
-# ------------------------------------------------------------
-function Send-TestRequest {
-    if ($script:busy) { return }
-    if (-not $script:ApiKey) { return }
-    $script:busy = $true
-    $model = $script:CurrentModel
-    $prompt = '这是一条 ai监控台 测试请求，用于刷新用量趋势图。'
-    try {
-        $null = Send-ChatMessage -Prompt $prompt -Model $model
-    } catch {
-        $rec = @{
-            ts     = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-            model  = $model
-            prompt = '测试请求'
-            error  = $_.Exception.Message
-        }
-        Append-Log $rec
-    } finally {
-        $script:busy = $false
-    }
-    Refresh-Fast
-}
-
-(Get-UI 'btnTest').Add_Click({ Send-TestRequest })
 
 # ============================================================
 #  向导逻辑
