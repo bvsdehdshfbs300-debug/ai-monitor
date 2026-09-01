@@ -1089,6 +1089,33 @@ function Test-Key {
 })
 
 # ============================================================
+#  DSH 集成：监控 DeepSeek Harness 会话
+# ============================================================
+$script:dshEnabled = $false
+$script:dshMonitorJs = Join-Path $script:ScriptDir 'dsh-monitor.js'
+
+# 检测 DSH 环境（Node ≥ 22.19 + DSH 会话目录 + 监控脚本）
+function Test-DshAvailable {
+    if (-not (Test-Path $script:dshMonitorJs)) { return $false }
+    $nodeCmd = Get-Command node -ErrorAction SilentlyContinue
+    if (-not $nodeCmd) { return $false }
+    $dshSessions = if ($env:DSH_HOME) { Join-Path $env:DSH_HOME 'sessions' } else { Join-Path $env:USERPROFILE '.dsh\sessions' }
+    return Test-Path $dshSessions
+}
+
+# 采集 DSH 请求用量（增量写入 usage.log 后刷新显示）
+function Invoke-DshMonitor {
+    if (-not $script:dshEnabled) { return }
+    if ($script:dragging) { return }
+    try {
+        & node $script:dshMonitorJs $script:LogFile 2>$null | Out-Null
+        Refresh-Fast
+    } catch { }
+}
+
+$script:dshEnabled = Test-DshAvailable
+
+# ============================================================
 #  主窗口启动
 # ============================================================
 function Start-MainWindow {
@@ -1110,6 +1137,16 @@ function Start-MainWindow {
     $timerLocal.Interval = [TimeSpan]::FromSeconds(1.5)
     $timerLocal.Add_Tick({ Update-ServiceLocal })
     $timerLocal.Start()
+
+    # DSH 集成：定期读取 DeepSeek Harness 会话，把请求用量计入统计
+    if ($script:dshEnabled) {
+        $timerDsh = New-Object System.Windows.Threading.DispatcherTimer
+        $timerDsh.Interval = [TimeSpan]::FromSeconds(8)
+        $timerDsh.Add_Tick({ Invoke-DshMonitor })
+        $timerDsh.Start()
+        # 启动时立即采集一次
+        Invoke-DshMonitor
+    }
 
     Load-Settings
     Update-UsageAndStats
@@ -1135,6 +1172,7 @@ function Start-MainWindow {
     $timerFast.Stop()
     $timerSlow.Stop()
     $timerLocal.Stop()
+    if ($timerDsh) { $timerDsh.Stop() }
 }
 
 # ============================================================
